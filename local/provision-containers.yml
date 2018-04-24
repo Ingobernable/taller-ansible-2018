@@ -1,0 +1,62 @@
+- hosts: localhost
+  connection: local
+  gather_facts: no
+  tasks:
+    - name: Create and start containers
+      lxd_container:
+        name: "{{ item.name }}"
+        state: started
+        devices:
+          eth0:
+            ipv4.address: "{{ item.ip }}"
+            nictype: bridged
+            parent: lxdbr0
+            type: nic
+        source:
+          type: image
+          server: https://cloud-images.ubuntu.com/releases
+          protocol: simplestreams
+          alias: "16.04"
+        profiles: ["default"]
+        wait_for_ipv4_addresses: true
+        timeout: 600
+      with_items:
+      - name: curso1
+        ip: 10.10.10.31
+      - name: curso2
+        ip: 10.10.10.32
+
+- hosts: containers
+  connection: lxd
+  gather_facts: no
+  tasks:
+    - name: install python
+      raw: apt update && apt install -y python-minimal
+
+    - name: install ssh
+      apt:
+        name:
+        - ssh
+        - language-pack-es
+        - vim
+
+    - name: set passwd user
+      user:
+        name: root
+        password: "{{ password| password_hash('sha512') }}"
+
+    - name: configure ssh
+      lineinfile:
+        regexp: "{{ item.regexp }}"
+        path: "/etc/ssh/sshd_config"
+        line: "{{ item.line }}"
+      with_items:
+      - regexp: "^PermitRootLogin"
+        line: "PermitRootLogin yes"
+      - regexp: "^PasswordAuthentication"
+        line: "PasswordAuthentication yes"
+
+    - name: restart sshd
+      service:
+        name: ssh
+        state: restarted
