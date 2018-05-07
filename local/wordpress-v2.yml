@@ -1,42 +1,48 @@
 - name: Provisioning database server (maria Db)
   hosts: back
   handlers:
-    - name: restart mysql
+    - name: "restart mysql"
       service:
-        name: mysql
+        name: "{{ mysql_service_name }}"
         state: restarted
-  vars:
-    mysql_listen_address: "{{ ansible_default_ipv4.address }}"
-    mysql_user: wordpress
-    mysql_password: password
   tasks:
     # - name: set hostname
     #   hostname:
     #     name: "{{ inventory_hostname }}"
-
-    - name: install packages
+    - name: import os variables
+      include_vars: "{{ playbook_dir }}/vars/{{ ansible_os_family }}.yml"
+    - name: install packages in debian
       apt:
         name:
           - mariadb-server
           - python-mysqldb
         update_cache: yes
+      when: ansible_os_family == "Debian"
+
+    - name: install packages in redhat
+      when: ansible_os_family  == "RedHat"
+      yum:
+        name:
+          - mariadb-server
+          - MySQL-python
+        update_cache: yes
 
     - name: ensure service
       service:
-        name: mysql
+        name: "{{ mysql_service_name }}"
         state: started
         enabled: yes
 
     - name: "set maria db options"
+      ignore_errors: yes
       notify:
       - "restart mysql"
       lineinfile:
-        path: /etc/mysql/mariadb.conf.d/50-server.cnf
+        path: "{{ mysql_config_path }}"
         regexp: "{{ item.regexp }}"
         line: "{{ item.line }}"
       with_items:
-        - regexp: "^bind-address"
-          line: "bind-address = {{ mysql_listen_address }}"
+      - "{{mysql_lines}}"
 
     - name: create user
       mysql_user:
@@ -46,12 +52,9 @@
         priv: '*.*:ALL'
         host: '%'
 
-
     - name: create database
       mysql_db:
         name: wordpress
-
-
 
 
 - name: Provisioning webserver server (apache + WP)

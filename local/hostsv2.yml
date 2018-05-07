@@ -1,0 +1,20 @@
+all:
+  children:
+    taller:
+      children:
+        front:
+          hosts:
+            front1:
+              ansible_host: 10.10.10.89
+        back:
+          hosts:
+            back1:
+              ansible_host: 10.10.10.70
+      vars:
+        ansible_user: root
+        ansible_ssh_pass: password
+        ansible_ssh_common_args: '-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
+    containers:
+        hosts:
+          curso[3:4]:
+            password: password

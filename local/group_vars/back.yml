@@ -1,0 +1,6 @@
+mysql_lines:
+- regexp: "^bind-address"
+  line: "bind-address = {{ mysql_listen_address }}"
+mysql_listen_address: "{{ ansible_default_ipv4.address }}"
+mysql_user: wordpress
+mysql_password: password

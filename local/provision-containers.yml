@@ -31,19 +31,18 @@
   gather_facts: no
   tasks:
     - name: install python
-      raw: apt update && apt install -y python-minimal
+      raw: yum install -y python
 
     - name: install ssh
-      apt:
+      yum:
         name:
-        - ssh
-        - language-pack-es
+        - openssh-server
         - vim
 
     - name: set passwd user
       user:
         name: root
-        password: "{{ password| password_hash('sha512') }}"
+        password: "{{ password | password_hash('sha512') }}"
 
     - name: configure ssh
       lineinfile:
@@ -58,5 +57,5 @@
 
     - name: restart sshd
       service:
-        name: ssh
+        name: sshd
         state: restarted

@@ -1,0 +1,24 @@
+- hosts: taller
+  vars:
+    kk: apt
+  tasks:
+  - name: test
+    action:
+      module: "{{ kk }}"
+      name: vim
+  - name: check if file exist
+    register: check_asasas
+    stat:
+      path: /usr/bin/asasas
+
+  - debug: var=check_asasas
+
+  - name: touch line
+    register: cmd
+    when:
+    - check_asasas is success
+    shell: which python
+    failed_when: false
+
+  - set_fact:
+      executable: check_asasas.stat.executable
