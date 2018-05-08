@@ -1,0 +1,15 @@
+- name: print external items
+  debug:
+    msg: "{{ item }}"
+
+- name: print internal items
+  debug:
+    msg: "{{ item }}"
+  with_list: "{{ internal_list }}"
+
+- name: print both
+  debug:
+    msg: "{{ item }} {{ internal_item }}"
+  with_list: "{{ internal_list }}"
+  loop_control:
+    loop_var: internal_item

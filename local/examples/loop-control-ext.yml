@@ -1,0 +1,12 @@
+- hosts: localhost
+  connection: local
+  vars:
+    external_list:
+    - external one
+    - external two
+    internal_list:
+    - internal one
+    - internal two
+  tasks:
+  - include_tasks: loop-control-int.yml
+    with_list: "{{ external_list }}"

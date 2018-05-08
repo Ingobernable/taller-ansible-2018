@@ -1,0 +1,30 @@
+- hosts: taller
+  connection: local
+  vars:
+    example_file: /tmp/example.txt
+  tasks:
+  - name: ensure example file dont exist
+    file:
+      path: "{{ example_file }}"
+      state: absent
+
+  - name: create file after 30 seconds
+    shell: >
+      sleep 30 && touch {{ example_file }}
+    async: 60
+    poll: 0
+
+  - name: check result
+    stat:
+      path: "{{ example_file }}"
+    register: example_status
+    until: example_status.stat.exists
+    retries: 10
+    delay: 5
+
+  - debug: var=example_status
+
+  - name: update locate DB and forget
+    command: /usr/bin/updatedb
+    async: 3600
+    poll: 0
